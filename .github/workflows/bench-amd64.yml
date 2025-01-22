@@ -1,0 +1,38 @@
+name: Running Geekbench on the Github Action (amd64)
+run-name: ${{ github.actor }} is benchmarking Github Actions (amd64)
+on:
+  push:
+    tags:
+      - '*'
+permissions:
+  contents: write
+
+jobs:
+  running-geekbench:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preparing system
+        id: preparing-system
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt install -y curl
+      - name: Preparing repository
+        id: prepare-repository
+        uses: actions/checkout@v4
+      - name: Running geekbench5
+        id: running-geekbench5
+        run: |
+          cd ${{ github.workspace }}
+          sh ./geekbench5-amd64.sh
+      - name: Running geekbench6
+        id: running-geekbench6
+        run: |
+          cd ${{ github.workspace }}
+          sh ./geekbench6-amd64.sh
+      - name: Uploading result as release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ${{ github.workspace }}/geekbench*txt
